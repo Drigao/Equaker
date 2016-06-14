@@ -3,6 +3,7 @@ package com.app.equaker;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import java.text.SimpleDateFormat;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Calendar;
 import java.util.Locale;
@@ -32,7 +33,7 @@ public class FormActivity extends AppCompatActivity implements OnClickListener {
 
     private DatePickerDialog toDatePickerDialog;
     private SimpleDateFormat dateFormatter;
-    public static final String BASE_URL = "http://www.seismi.org/";
+    public static final String BASE_URL = "http://kuakes.com/";
 
 
     @Override
@@ -55,23 +56,31 @@ public class FormActivity extends AppCompatActivity implements OnClickListener {
                 .build();
         RestInterface service = retrofit.create(RestInterface.class);
 
-        Call<KuakeLocation> call = service.getEarthquakes();
+        Call<List<KuakeLocation>> call = service.getEartquakes("1","6.4 - 9.5","01/04/2016","01/05/2016","1");
 
         //Executing Call
-        call.enqueue(new Callback<KuakeLocation>() {
+        call.enqueue(new Callback<List<KuakeLocation>>() {
             @Override
-            public void onResponse(Call<KuakeLocation> call, Response<KuakeLocation> response) {
-                List<Earthquake> equakes = response.body().getEarthquakes();
-                Log.d("CORRECTO", equakes.toString());
-                for (Earthquake eq : equakes) {
-                    Log.d("REGION", eq.getRegion());
-                    Log.d("MAGNITUDE", eq.getMagnitude());
+            public void onResponse(Call<List<KuakeLocation>> call, Response<List<KuakeLocation>> response) {
+                int maxLimit = 0;
+                List<KuakeLocation> equakes = response.body();
+                equakes.remove(0);
+                Iterator<KuakeLocation> kuakeIterator = equakes.iterator();
+                while (kuakeIterator.hasNext() && maxLimit < 10) {
+                    Log.d("ITERATOR","al menos lo recorre");
+                    Log.d("EQUAKE",kuakeIterator.next().getTitle());
+                    maxLimit++;
                 }
+
 
             }
 
             @Override
-            public void onFailure(Call<KuakeLocation> call, Throwable t) {
+            public void onFailure(Call<List<KuakeLocation>> call, Throwable t) {
+                Log.d("fallo",t.getLocalizedMessage());
+                Log.d("fallo1",t.getMessage());
+                Log.d("fallo2",t.toString());
+                Log.d("fallo3",call.toString());
 
             }
         });
